@@ -1,5 +1,72 @@
 Revision history for Cisco-IronPort
 
+0.06	14-09-2012
+	Added new methods:
+		- average_incoming_message_size_current_hour
+		- average_incoming_message_size_current_hour_raw
+		- average_incoming_message_size_current_day
+		- average_incoming_message_size_current_day_raw
+		- average_messages_in_workqueue_current_hour
+		- average_messages_in_workqueue_current_hour_raw
+		- average_messages_in_workqueue_current_day
+		- average_messages_in_workqueue_current_day_raw
+		- average_outgoing_message_size_current_hour
+		- average_outgoing_message_size_current_hour_raw
+		- average_outgoing_message_size_current_day
+		- average_outgoing_message_size_current_day_raw
+		- cpu_by_function_current_hour
+		- cpu_by_function_current_hour_raw
+		- cpu_by_function_current_day
+		- cpu_by_function_current_day_raw
+		- incoming_content_filter_matches_current_hour
+		- incoming_content_filter_matches_current_hour_raw
+		- incoming_content_filter_matches_current_day
+		- incoming_content_filter_matches_current_day_raw
+		- maximum_messages_in_workqueue_current_hour
+		- maximum_messages_in_workqueue_current_hour_raw
+		- maximum_messages_in_workqueue_current_day
+		- maximum_messages_in_workqueue_current_day_raw
+		- memory_page_swapping_current_hour
+		- memory_page_swapping_current_hour_raw
+		- memory_page_swapping_current_day
+		- memory_page_swapping_current_day_raw
+		- overall_cpu_usage_current_hour
+		- overall_cpu_usage_current_hour_raw
+		- overall_cpu_usage_current_day
+		- overall_cpu_usage_current_day_raw
+		- top_incoming_virus_types_detected_current_hour
+		- top_incoming_virus_types_detected_current_hour_raw
+		- top_incoming_virus_types_detected_current_day
+		- top_incoming_virus_types_detected_current_day_raw
+		- top_outgoing_content_filter_matches_current_hour
+		- top_outgoing_content_filter_matches_current_hour_raw
+		- top_outgoing_content_filter_matches_current_day
+		- top_outgoing_content_filter_matches_current_day_raw
+		- total_incoming_connections_current_hour
+		- total_incoming_connections_current_hour_raw
+		- total_incoming_connections_current_day
+		- total_incoming_connections_current_day_raw
+		- total_incoming_message_size_current_hour
+		- total_incoming_message_size_current_hour_raw
+		- total_incoming_message_size_current_day
+		- total_incoming_message_size_current_day_raw
+		- total_incoming_messages_current_hour
+		- total_incoming_messages_current_hour_raw
+		- total_incoming_messages_current_day
+		- total_incoming_messages_current_day_raw
+		- total_outgoing_connections_current_hour
+		- total_outgoing_connections_current_hour_raw
+		- total_outgoing_connections_current_day
+		- total_outgoing_connections_current_day_raw
+		- total_outgoing_message_size_current_hour
+		- total_outgoing_message_size_current_hour_raw
+		- total_outgoing_message_size_current_day
+		- total_outgoing_message_size_current_day_raw
+		- total_outgoing_messages_current_hour
+		- total_outgoing_messages_current_hour_raw
+		- total_outgoing_messages_current_day
+		- total_outgoing_messages_current_day_raw
+
 0.05	07-08-2012
 	Added new methods:
 		- average_time_in_workqueue_current_hour

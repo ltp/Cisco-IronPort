@@ -6,26 +6,26 @@ use warnings;
 use LWP;
 use Carp qw(croak);
 
-our $VERSION 	= '0.05';
+our $VERSION 	= '0.06';
 our @RANGES	= qw (current_hour current_day);
 our %M_MAP	= (
 		top_users_by_clean_outgoing_messages 	=> {
-							report_query	=> 'mga_internal_users_top_outgoing_messages',
-							report_def	=> 'mga_internal_users',
+							report_query_id	=> 'mga_internal_users_top_outgoing_messages',
+							report_def_id	=> 'mga_internal_users',
 							sortby		=> 'internal_user'
 							},
 		incoming_mail_summary			=> {
-							report_query	=> 'mga_overview_incoming_mail_summary',
-							report_def	=> 'mga_overview',
+							report_query_id	=> 'mga_overview_incoming_mail_summary',
+							report_def_id	=> 'mga_overview',
 							},
 		incoming_mail_details			=> {
-							report_query	=> 'mga_incoming_mail_domain_search',
-							report_def	=> 'mga_incoming_mail',
+							report_query_id	=> 'mga_incoming_mail_domain_search',
+							report_def_id	=> 'mga_incoming_mail',
 							sortby		=> 'sender_domain'
 							},
 		average_time_in_workqueue		=> {
-							report_query	=> 'mga_system_capacity_average_time_workqueue',
-							report_def	=> 'mga_system_capacity',
+							report_query_id	=> 'mga_system_capacity_average_time_workqueue',
+							report_def_id	=> 'mga_system_capacity',
 							sortby		=> 'begin_timestamp'
 							},
 		average_messages_in_workqueue		=> {
@@ -38,8 +38,87 @@ our %M_MAP	= (
 							report_def_id	=> 'mga_system_capacity',
 							sortby		=> 'begin_timestamp'
 							},
-		
-							
+		total_incoming_connections		=> {
+							report_query_id	=> 'mga_system_capacity_total_incoming_connections',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		total_incoming_messages			=> {
+							report_query_id	=> 'mga_system_capacity_total_incoming_messages',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		average_incoming_message_size		=> {
+							report_query_id	=> 'mga_system_capacity_average_incoming_message_size',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		total_incoming_message_size		=> {
+							report_query_id	=> 'mga_system_capacity_total_incoming_message_size',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		total_outgoing_connections		=> {
+							report_query_id	=> 'mga_system_capacity_total_outgoing_connections',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		total_outgoing_messages			=> {
+							report_query_id	=> 'mga_system_capacity_total_outgoing_messages',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		total_outgoing_message_size		=> {
+							report_query_id	=> 'mga_system_capacity_total_outgoing_message_size',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		average_outgoing_message_size		=> {
+							report_query_id	=> 'mga_system_capacity_average_outgoing_message_size',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		overall_cpu_usage			=> {
+							report_query_id	=> 'mga_system_capacity_overall_cpu_usage',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		cpu_by_function				=> {
+							report_query_id	=> 'mga_system_capacity_cpu_by_function',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		memory_page_swapping			=> {
+							report_query_id	=> 'mga_system_capacity_swap_page_out',
+							report_def_id	=> 'mga_system_capacity',
+							sortby		=> 'begin_timestamp'
+							},
+		top_incoming_virus_types_detected	=> {
+							report_def_id	=> 'mga_virus_types',
+							report_query_id	=> 'mga_virus_types_top_incoming_virus_types',
+							sortby		=> 'begin_timestamp'
+							},
+		top_outgoing_content_filter_matches	=> {
+							report_def_id	=> 'mga_content_filters',
+							report_query_id	=> 'mga_content_filters_top_outgoing_cf_matches',
+							sortby		=> 'begin_timestamp'
+							},
+		top_outgoing_content_filter_matches	=> {
+							report_def_id	=> 'mga_content_filters',
+							report_query_id	=> 'mga_content_filters_top_incoming_cf_matches',
+							sortby		=> 'begin_timestamp'
+							},
+		incoming_content_filter_matches		=> {
+							report_def_id	=> 'mga_content_filters',
+							report_query_id	=> 'mga_content_filters_incoming_cf_matches',
+							sortby		=> 'begin_timestamp'
+							},
+		incoming_content_filter_matches		=> {
+							report_def_id	=> 'mga_content_filters',
+							report_query_id	=> 'mga_content_filters_outgoing_cf_matches',
+							sortby		=> 'begin_timestamp'
+							},
+						
 		# profile_type=all
 		# format=csv
 		# report_query_id=mga_system_capacity_average_messages_workqueue
@@ -67,8 +146,8 @@ sub new {
 		*{ __PACKAGE__ . '::__' . $m } = sub {
 			my ($self,%args) = @_;
 			return $self->__request("report?format=csv&date_range=$args{date_range}&" .
-						"report_query_id=$M_MAP{$m}{report_query}&" .
-						"report_def_id=$M_MAP{$m}{report_def}")
+						"report_query_id=$M_MAP{$m}{report_query_id}&" .
+						"report_def_id=$M_MAP{$m}{report_def_id}&profile_type=all")
 		};
 
 		foreach my $range (@RANGES) {
@@ -121,8 +200,11 @@ sub __parse_statistics {
 			elsif ( $headers[$c] =~ /(sender_domain|orig_value|internal_user)/ ) {
 				$res{$cols[$index]}{$headers[$c]} = $_ 
 			}
+			elsif ( $headers[$c] =~ /virus_type/ ) {
+				$res{$cols[$index]}{$headers[$c]} .= ",$_"
+			}
 			else { 
-				$res{$cols[$index]}{$headers[$c]} += $_ 
+				$res{$cols[$index]}{$headers[$c]} += $_
 			}
 			
 			$c++
@@ -154,6 +236,7 @@ sub __parse_summary {
 =head1 NAME
 
 Cisco::IronPort - Interface to Cisco IronPort Reporting API
+
 
 =head1 SYNOPSIS
 
@@ -427,19 +510,665 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 average_incoming_message_size_current_hour
+
+	my %avg_msg_size = $ironport->average_incoming_message_size_current_hour;
+
+	foreach my $mdata (sort keys %avg_msg_size) {
+		print "$avg_msg_size{$mdata}{end_date} : $avg_msg_size{$mdata}{message_size}\n";
+	}
+
+	# Prints the average incoming message size in bytes for the time sample periods in the previous hour.
+	# e.g.
+	# 2012-09-13 22:04 GMT : 111587.886555
+	# 2012-09-13 22:09 GMT : 84148.6127168
+	# 2012-09-13 22:14 GMT : 26486.8187919
+	# 2012-09-13 22:19 GMT : 58772.1949153
+	# ...
+
+This method returns a nested hash containing statistics for the average incoming message size in bytes for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  message_size		=> the average incoming message size in bytes for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 average_incoming_message_size_current_hour_raw
+
+Returns a scalar containing statistics for the average incoming message size in bytes for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 average_incoming_message_size_current_day
+
+Returns a nested hash containing statistics for the average incoming message size in bytes for the previous daily period 
+- the hash has the same structure as detailed in the B<average_incoming_message_size_current_hour> above.
+
+=head2 average_incoming_message_size_current_day_raw
+
+Returns a scalar containing statistics for the average incoming message size in bytes for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 average_messages_in_workqueue_current_hour
+
+This method returns a nested hash containing statistics for the average number of messages in the workqueue for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  messages		=> the average number of messages in the workqueue for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 average_messages_in_workqueue_current_hour_raw
+
+Returns a scalar containing statistics for the average number of messages in the workqueue for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 average_messages_in_workqueue_current_day
+
+Returns a nested hash containing statistics for the average number of messages in the workqueue for the previous
+daily period - the hash has the same structure as detailed in the B<average_messages_in_workqueue_current_hour> above.
+
+=head2 average_messages_in_workqueue_current_day_raw
+
+Returns a scalar containing statistics for the average number of messages in the workqueue for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 average_outgoing_message_size_current_hour
+
+This method returns a nested hash containing statistics for the average outgoing message size in bytes for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  message_size		=> the average outgoing message size in bytes for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 average_outgoing_message_size_current_hour_raw
+
+Returns a scalar containing statistics for the average outgoing message size in bytes for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 average_outgoing_message_size_current_day
+
+Returns a nested hash containing statistics for the average outgoing message size in bytes for the previous
+daily period - the hash has the same structure as detailed in the B<average_outoging_message_size_current_hour> above.
+
+=head2 average_outgoing_message_size_current_day_raw
+
+Returns a scalar containing statistics for the average outgoing message size in bytes for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 cpu_by_function_current_hour
+
+This method returns a nested hash containing statistics for the CPU usage by function for the previous hourly period 
+- the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  anti-spam		=> the percentage of CPU time used for anti-spam functions,
+	  anti-virus		=> the percentage of CPU time used for anti-virus functions,
+	  mail_processing	=> the percentage of CPU time used for mail processing functions,
+	  reporting		=> the percentage of CPU time used for reporting functions,
+	  quarantine		=> the percentage of CPU time used for quarantine functions,
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 cpu_by_function_current_hour_raw
+
+Returns a scalar containing statistics for the CPU usage by function for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 cpu_by_function_current_day
+
+Returns a nested hash containing statistics for the CPU usage by function for the previous daily period 
+- the hash has the same structure as detailed in the B<cpu_by_function_current_hour> above.
+
+=head2 cpu_by_function_current_day_raw
+
+Returns a scalar containing statistics for the CPU usage by function for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 incoming_content_filter_matches_current_hour
+
+This method returns a nested hash containing statistics for incoming content filter matches for the 
+previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  content_filter	=> the name of the content filter,
+	  messages		=> the number of incoming messages matched by the content filter in the previous hour period,
+	  total_outgoing_matches=> the number of outgoing messages matched by the content filter in the previous hour period,
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 incoming_content_filter_matches_current_hour_raw
+
+Returns a scalar containing statistics for incoming content filter matches for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 incoming_content_filter_matches_current_day
+
+Returns a nested hash containing statistics for incoming content filter matches for the previous daily period 
+- the hash has the same structure as detailed in the B<incoming_content_filter_matches_current_hour> above.
+
+=head2 incoming_content_filter_matches_current_day_raw
+
+Returns a scalar containing statistics for the incoming content filter matches for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 maximum_messages_in_workqueue_current_hour
+
+This method returns a nested hash containing statistics for the maximum number of messages in the workqueue for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  messages		=> the maximum number of messages in the workqueue for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 maximum_messages_in_workqueue_current_hour_raw
+
+Returns a scalar containing statistics for the maximum number of messages in the workqueue for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 maximum_messages_in_workqueue_current_day
+
+Returns a nested hash containing statistics for the maximum number of messages in the workqueue for the previous
+daily period - the hash has the same structure as detailed in the B<maximum_messages_in_workqueue_current_hour> above.
+
+=head2 maximum_messages_in_workqueue_current_day_raw
+
+Returns a scalar containing statistics for the maximum messages in the workqueue for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 memory_page_swapping_current_hour
+
+This method returns a nested hash containing statistics for the number of memory pages swapped for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  pages_swapped		=> the number of memory pages swapped for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 memory_page_swapping_current_hour_raw
+
+Returns a scalar containing statistics for the number of memory pages swapped for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 memory_page_swapping_current_day
+
+Returns a nested hash containing statistics for the number of memory pages swapped for the previous daily period 
+- the hash has the same structure as detailed in the B<memory_page_swapping_current_hour> above.
+
+=head2 memory_page_swapping_current_day_raw
+
+Returns a scalar containing statistics for the number of memory pages swapped for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 overall_cpu_usage_current_hour
+
+This method returns a nested hash containing statistics for the overall CPU usage for the previous 
+hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  cpu_usage		=> the total CPU usage for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 overall_cpu_usage_current_hour_raw
+
+Returns a scalar containing statistics for the overall CPU usage for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 overall_cpu_usage_current_day
+
+Returns a nested hash containing statistics for the overall CPU usage for the previous daily period 
+- the hash has the same structure as detailed in the B<overall_cpu_usage_current_hour> above.
+
+=head2 overall_cpu_usage_current_day_raw
+
+Returns a scalar containing statistics for the overall CPU usage for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 top_incoming_virus_types_detected_current_hour
+
+This method returns a nested hash containing statistics for the top incoming virus types detected in the previous 
+hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  messages		=> the number of messages detected for the measurement period,
+	  virus_type		=> a comma-seperated list of the incoming virus types detected for this measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 top_incoming_virus_types_detected_current_hour_raw
+
+Returns a scalar containing statistics for the top incoming virus types detected in the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 top_incoming_virus_types_detected_current_day
+
+Returns a nested hash containing statistics for the top incoming virus types detected in the previous daily 
+period - the hash has the same structure as detailed in the B<top_incoming_virus_types_detected_current_hour> above.
+
+=head2 top_incoming_virus_types_detected_current_day_raw
+
+Returns a scalar containing statistics for the top incoming virus types detected for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 top_outgoing_content_filter_matches_current_hour
+
+This method returns a nested hash containing statistics for the top outgoing content filter matches for the 
+previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  content_filter	=> the name of the content filter,
+	  messages		=> the number of outgoing messages matched by the content filter in the previous hour period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 top_outgoing_content_filter_matches_current_hour_raw
+
+Returns a scalar containing statistics for the top outgoing content content filter matches for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 top_outgoing_content_filter_matches_current_day
+
+Returns a nested hash containing statistics for the top outgoing content filter matches for the previous daily period 
+- the hash has the same structure as detailed in the B<top_outgoing_content_filter_matches_current_hour> above.
+
+=head2 top_outgoing_content_filter_matches_current_day_raw
+
+Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_incoming_connections_current_hour
+
+This method returns a nested hash containing statistics for the total number of incoming connections for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  connections		=> the total number of connections for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 total_incoming_connections_current_hour_raw
+
+Returns a scalar containing statistics for the total number of incoming connections for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_incoming_connections_current_day
+
+Returns a nested hash containing statistics for the total number of incoming connections for the previous daily period 
+- the hash has the same structure as detailed in the B<total_incoming connections_current_hour> above.
+
+=head2 total_incoming_connections_current_day_raw
+
+Returns a scalar containing statistics for the total number of incoming connections for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_incoming_message_size_current_hour
+
+This method returns a nested hash containing statistics for the total incoming message size in bytes for the previous 
+hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  message_size		=> the total incoming message size in bytes for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 total_incoming_message_size_current_hour_raw
+
+Returns a scalar containing statistics for the total incoming message size in bytes for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_incoming_message_size_current_day
+
+Returns a nested hash containing statistics for the total incoming message size in bytes for the previous daily period 
+- the hash has the same structure as detailed in the B<total_incoming_message_size_current_hour> above.
+
+=head2 total_incoming_message_size_current_day_raw
+
+Returns a scalar containing statistics for the total incoming message size in bytes for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_incoming_messages_current_hour
+
+This method returns a nested hash containing statistics for the total number of incoming messages for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  messages		=> the total number of incoming messages for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 total_incoming_messages_current_hour_raw
+
+Returns a scalar containing statistics for the total number of incoming messages for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_incoming_messages_current_day
+
+Returns a nested hash containing statistics for the total number of incoming messages for the previous daily period 
+- the hash has the same structure as detailed in the B<total_number_of_incoming_messages_current_hour> above.
+
+=head2 total_incoming_messages_current_day_raw
+
+Returns a scalar containing statistics for the total number of incoming messages for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_connections_current_hour
+
+This method returns a nested hash containing statistics for the total number of outgoing connections for
+the previous hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  connections		=> the total number of outgoing connections for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 total_outgoing_connections_current_hour_raw
+
+Returns a scalar containing statistics for the total number of outgoing connections for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_connections_current_day
+
+Returns a nested hash containing statistics for the total number of outgoing connections for the previous daily period 
+- the hash has the same structure as detailed in the B<total_number_outgoing_connections_current_hour> above.
+
+=head2 total_outgoing_connections_current_day_raw
+
+Returns a scalar containing statistics for the total number of outgoing connections for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_message_size_current_hour
+
+This method returns a nested hash containing statistics for the total outgoing message size in bytes for the previous 
+hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  message_size		=> the total outgoing message size in bytes for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 total_outgoing_message_size_current_hour_raw
+
+Returns a scalar containing statistics for the total outgoing message size in bytes for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_message_size_current_day
+
+Returns a nested hash containing statistics for the total outgoing message size in bytes for the previous daily period 
+- the hash has the same structure as detailed in the B<total_outgoing_message_size_current_hour> above.
+
+=head2 total_outgoing_message_size_current_day_raw
+
+Returns a scalar containing statistics for the total outgoing message size for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_messages_current_hour
+
+This method returns a nested hash containing statistics for the total outgoing number of messages for the previous 
+hourly period - the hash has the following structure:
+
+	measurement_period_1_begin_timestamp => {
+	  begin_timestamp	=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+	  end_timestamp		=> a timestamp marking the ending of the measurement period in seconds since epoch,
+	  begin_date		=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  end_date		=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+	  messages		=> the total number of outgoing messages for the measurement period
+	},
+	measurement_period_2_begin_timestamp => {
+	  ...
+	},
+	...
+	measurement_period_n_begin_timestamp => {
+	  ...
+	}
+
+=head2 total_outgoing_messages_current_hour_raw
+
+Returns a scalar containing statistics for the total number of outgoing messages for the previous hourly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_messages_current_day
+
+Returns a nested hash containing statistics for the total number of outgoing messages for the previous daily period 
+- the hash has the same structure as detailed in the B<total_number_of_outgoing_messages_current_hour> above.
+
+=head2 total_outgoing_messages_current_day_raw
+
+Returns a scalar containing statistics for the total number of outgoing messages for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =cut
+
 
 =head1 AUTHOR
 
 Luke Poskitt, C<< <ltp at cpan.org> >>
+
 
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-cisco-ironport at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Cisco-IronPort>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
 
 
 =head1 SUPPORT
@@ -488,4 +1217,4 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of Cisco::IronPort
+1;
