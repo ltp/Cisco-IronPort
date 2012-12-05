@@ -6,9 +6,14 @@ use warnings;
 use LWP;
 use Carp qw(croak);
 
-our $VERSION 	= '0.06';
+our $VERSION 	= '0.07';
 our @RANGES	= qw (current_hour current_day);
 our %M_MAP	= (
+		internal_user_details			=> {
+							report_def_id	=> 'mga_internal_users',
+							report_query_id	=> 'mga_internal_users_user_monitoring',
+							sortby		=> 'internal_user'
+							},
 		top_users_by_clean_outgoing_messages 	=> {
 							report_query_id	=> 'mga_internal_users_top_outgoing_messages',
 							report_def_id	=> 'mga_internal_users',
@@ -1153,6 +1158,56 @@ Returns a nested hash containing statistics for the total number of outgoing mes
 
 Returns a scalar containing statistics for the total number of outgoing messages for the previous daily period as 
 retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 internal_user_details_current_hour
+
+This method returns a nested hash containing details of the mail sent by each internal user for the previous 
+hourly period - the hash has the following structure:
+
+
+	user1@domain.com => {
+		begin_date				=> a human-readable timestamp marking the beginning of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+		begin_timestamp				=> a timestamp marking the beginning of the measurement period in seconds since epoch,
+		end_date				=> a human-readable timestamp marking the ending of the measurement period (YYYY-MM-DD HH:MM:SS TZ),
+		end_timestamp				=> a timestamp marking the ending of the measurement period in seconds since epoch,
+		incoming_clean 				=> the number of incoming clean messages sent to this user,
+		incoming_content_filter_matches 	=> the number of incoming messages sent to this user matching ian incoming content filter,
+		incoming_spam_detected			=> the number of incoming messages sent to this user that were detected as spam,
+		incoming_stopped_by_content_filter	=> the number of incoming messages sent to this user that were stopped by content filtering,
+		incoming_virus_detected			=> the number of incoming messages sent to this user that were detected as virii,
+		internal_user				=> the email address of the internal user,
+		outgoing_clean 				=> the number of outgoing clean messages sent by this user,
+		outgoing_content_filter_matches		=> the number of outgoing messages sent by this user matching outgoing content filters,
+		outgoing_spam_detected			=> the number of outgoing messages sent by this user that were detected as spam,
+		outgoing_stopped_by_content_filter	=> the number of outgoing messages sent by this user stopped by outgoing content filters,
+		outgoing_virus_detected			=> the number of outgoing messages sent by this user matching outgoing virus filters
+	},
+	user2@domain.com => {
+		...
+	},
+	...
+	userN@domain.com => {
+		...
+	}
+
+=head2 internal_user_details_current_hour_raw
+
+Returns a scalar containing details of the mail sent by each internal user for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 internal_user_details_current_day
+
+Returns a nested hash containing details of the mail sent by each internal user for the previous daily period
+- the hash has the same structure as detailed in the B<internal_user_details_current_hour> above.
+
+=head2 internal_user_details_current_day_raw
+
+Returns a scalar containing details of the mail sent by each internal user for the previous daily
+period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 

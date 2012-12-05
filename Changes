@@ -1,5 +1,12 @@
 Revision history for Cisco-IronPort
 
+0.07	05-12-2012
+	Added new methods:
+		- internal_user_details_current_hour
+		- internal_user_details_current_hour_raw
+		- internal_user_details_current_day
+		- internal_user_details_current_day_raw
+
 0.06	14-09-2012
 	Added new methods:
 		- average_incoming_message_size_current_hour
