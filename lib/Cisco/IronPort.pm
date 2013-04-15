@@ -6,8 +6,8 @@ use warnings;
 use LWP;
 use Carp qw(croak);
 
-our $VERSION 	= '0.07';
-our @RANGES	= qw (current_hour current_day);
+our $VERSION 	= '0.08';
+our @RANGES	= qw (current_hour current_day current_week);
 our %M_MAP	= (
 		internal_user_details			=> {
 							report_def_id	=> 'mga_internal_users',
@@ -238,6 +238,10 @@ sub __parse_summary {
 	return %res
 }
 
+1;
+
+__END__
+
 =head1 NAME
 
 Cisco::IronPort - Interface to Cisco IronPort Reporting API
@@ -338,6 +342,11 @@ with all spaces converted to underscores and all characters lower-cased.
 Returns a nested hash with the same structure and information as described above for the B<incoming_mail_summary_current_hour>
 method, but for a time period covering the current day.
 
+=head2 incoming_mail_summary_current_week
+
+Returns a nested hash with the same structure and information as described above for the B<incoming_mail_summary_current_hour>
+method, but for a time period covering the current week.
+
 =head2 incoming_mail_summary_current_hour_raw
 
 Returns a scalar containing the incoming mail summary statistics for the current hour period unformated and as retrieved directly 
@@ -351,6 +360,11 @@ Returns a scalar containing the incoming mail summary statistics for the current
 from the reporting API.
 
 This method may be useful if you wish to process the raw data from the API call directly.
+
+=head2 incoming_mail_summary_current_week_raw
+
+Returns a scalar containing the incoming mail summary statistics for the current week period unformated and as retrieved directly 
+from the reporting API.
 
 =head2 incoming_mail_details_current_hour
 
@@ -403,6 +417,11 @@ excercised in storing and parsing this structure.
 This method returns a nested hash as described in the B<incoming_mail_details_current_hour> method above but for a period
 of the current day.  Consequently the returned hash may contain a far larger number of entries.
 
+=head2 incoming_mail_details_current_week
+
+This method returns a nested hash as described in the B<incoming_mail_details_current_hour> method above but for a period
+of the current week.  Consequently the returned hash may contain a far larger number of entries.
+
 =head2 incoming_mail_details_current_hour_raw
 
 Returns a scalar containing the incoming mail details for the current hour period as retrieved directly from the reporting
@@ -411,6 +430,11 @@ API.  This method is useful is you wish to access and/or parse the results direc
 =head2 incoming_mail_details_current_day_raw
 
 Returns a scalar containing the incoming mail details for the current day period as retrieved directly from the reporting
+API.  This method is useful is you wish to access and/or parse the results directly.
+
+=head2 incoming_mail_details_current_week_raw
+
+Returns a scalar containing the incoming mail details for the current week period as retrieved directly from the reporting
 API.  This method is useful is you wish to access and/or parse the results directly.
 
 =head2 top_users_by_clean_outgoing_messages_current_hour
@@ -447,6 +471,11 @@ current hour period.  The hash has the following structure:
 Returns a nested hash containing details of the top ten internal users by number of clean outgoing messages sent for the
 current day period.
 
+=head2 top_users_by_clean_outgoing_messages_current_week
+
+Returns a nested hash containing details of the top ten internal users by number of clean outgoing messages sent for the
+current week period.
+
 =head2 top_users_by_clean_outgoing_messages_current_hour_raw
 
 Returns a scalar containing the details of the top ten internal users by number of clean outgoing messages sent for the
@@ -458,6 +487,13 @@ This method may be useful if you wish to process the raw data retrieved from the
 
 Returns a scalar containing the details of the top ten internal users by number of clean outgoing messages sent for the
 current day period as retrieved directly from the reporting API.  
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 top_users_by_clean_outgoing_messages_current_week_raw
+
+Returns a scalar containing the details of the top ten internal users by number of clean outgoing messages sent for the
+current week period as retrieved directly from the reporting API.  
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
@@ -501,6 +537,11 @@ the previous hourly period - the hash has the following structure:
 Returns a nested hash containing statistics for the average time a message spent in the workqueue for the previous
 daily period - the hash has the same structure as detailed in the B<average_time_in_workqueue_current_hour> above.
 
+=head2 average_time_in_workqueue_current_week
+
+Returns a nested hash containing statistics for the average time a message spent in the workqueue for the previous
+weekly period - the hash has the same structure as detailed in the B<average_time_in_workqueue_current_hour> above.
+
 =head2 average_time_in_workqueue_current_hour_raw
 
 Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous hourly
@@ -511,6 +552,13 @@ This method may be useful if you wish to process the raw data retrieved from the
 =head2 average_time_in_workqueue_current_day_raw
 
 Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 average_time_in_workqueue_current_week_raw
+
+Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous weekly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -568,6 +616,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 average_incoming_message_size_current_week
+
+Returns a nested hash containing statistics for the average incoming message size in bytes for the previous weekly period 
+- the hash has the same structure as detailed in the B<average_incoming_message_size_current_hour> above.
+
+=head2 average_incoming_message_size_current_week_raw
+
+Returns a scalar containing statistics for the average incoming message size in bytes for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 average_messages_in_workqueue_current_hour
 
 This method returns a nested hash containing statistics for the average number of messages in the workqueue for
@@ -607,6 +667,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 average_messages_in_workqueue_current_week
+
+Returns a nested hash containing statistics for the average number of messages in the workqueue for the previous
+weekly period - the hash has the same structure as detailed in the B<average_messages_in_workqueue_current_hour> above.
+
+=head2 average_messages_in_workqueue_current_week_raw
+
+Returns a scalar containing statistics for the average number of messages in the workqueue for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 average_outgoing_message_size_current_hour
 
 This method returns a nested hash containing statistics for the average outgoing message size in bytes for
@@ -642,6 +714,18 @@ daily period - the hash has the same structure as detailed in the B<average_outo
 =head2 average_outgoing_message_size_current_day_raw
 
 Returns a scalar containing statistics for the average outgoing message size in bytes for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 average_outgoing_message_size_current_week
+
+Returns a nested hash containing statistics for the average outgoing message size in bytes for the previous
+weekly period - the hash has the same structure as detailed in the B<average_outoging_message_size_current_hour> above.
+
+=head2 average_outgoing_message_size_current_week_raw
+
+Returns a scalar containing statistics for the average outgoing message size in bytes for the previous weekly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -689,6 +773,18 @@ retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 cpu_by_function_current_week
+
+Returns a nested hash containing statistics for the CPU usage by function for the previous weekly period 
+- the hash has the same structure as detailed in the B<cpu_by_function_current_hour> above.
+
+=head2 cpu_by_function_current_week_raw
+
+Returns a scalar containing statistics for the CPU usage by function for the previous weekly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 incoming_content_filter_matches_current_hour
 
 This method returns a nested hash containing statistics for incoming content filter matches for the 
@@ -726,6 +822,18 @@ Returns a nested hash containing statistics for incoming content filter matches 
 =head2 incoming_content_filter_matches_current_day_raw
 
 Returns a scalar containing statistics for the incoming content filter matches for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 incoming_content_filter_matches_current_week
+
+Returns a nested hash containing statistics for incoming content filter matches for the previous weekly period 
+- the hash has the same structure as detailed in the B<incoming_content_filter_matches_current_hour> above.
+
+=head2 incoming_content_filter_matches_current_week_raw
+
+Returns a scalar containing statistics for the incoming content filter matches for the previous weekly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -769,6 +877,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 maximum_messages_in_workqueue_current_week
+
+Returns a nested hash containing statistics for the maximum number of messages in the workqueue for the previous
+weekly period - the hash has the same structure as detailed in the B<maximum_messages_in_workqueue_current_hour> above.
+
+=head2 maximum_messages_in_workqueue_current_week_raw
+
+Returns a scalar containing statistics for the maximum messages in the workqueue for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 memory_page_swapping_current_hour
 
 This method returns a nested hash containing statistics for the number of memory pages swapped for
@@ -808,6 +928,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 memory_page_swapping_current_week
+
+Returns a nested hash containing statistics for the number of memory pages swapped for the previous weekly period 
+- the hash has the same structure as detailed in the B<memory_page_swapping_current_hour> above.
+
+=head2 memory_page_swapping_current_week_raw
+
+Returns a scalar containing statistics for the number of memory pages swapped for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 overall_cpu_usage_current_hour
 
 This method returns a nested hash containing statistics for the overall CPU usage for the previous 
@@ -843,6 +975,18 @@ Returns a nested hash containing statistics for the overall CPU usage for the pr
 =head2 overall_cpu_usage_current_day_raw
 
 Returns a scalar containing statistics for the overall CPU usage for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 overall_cpu_usage_current_week
+
+Returns a nested hash containing statistics for the overall CPU usage for the previous weekly period 
+- the hash has the same structure as detailed in the B<overall_cpu_usage_current_hour> above.
+
+=head2 overall_cpu_usage_current_week_raw
+
+Returns a scalar containing statistics for the overall CPU usage for the previous weekly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -887,6 +1031,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 top_incoming_virus_types_detected_current_week
+
+Returns a nested hash containing statistics for the top incoming virus types detected in the previous weekly
+period - the hash has the same structure as detailed in the B<top_incoming_virus_types_detected_current_hour> above.
+
+=head2 top_incoming_virus_types_detected_current_week_raw
+
+Returns a scalar containing statistics for the top incoming virus types detected for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 top_outgoing_content_filter_matches_current_hour
 
 This method returns a nested hash containing statistics for the top outgoing content filter matches for the 
@@ -923,6 +1079,18 @@ Returns a nested hash containing statistics for the top outgoing content filter 
 =head2 top_outgoing_content_filter_matches_current_day_raw
 
 Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 top_outgoing_content_filter_matches_current_week
+
+Returns a nested hash containing statistics for the top outgoing content filter matches for the previous weekly period 
+- the hash has the same structure as detailed in the B<top_outgoing_content_filter_matches_current_hour> above.
+
+=head2 top_outgoing_content_filter_matches_current_week_raw
+
+Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous weekly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -966,6 +1134,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 total_incoming_connections_current_week
+
+Returns a nested hash containing statistics for the total number of incoming connections for the previous weekly period 
+- the hash has the same structure as detailed in the B<total_incoming connections_current_hour> above.
+
+=head2 total_incoming_connections_current_week_raw
+
+Returns a scalar containing statistics for the total number of incoming connections for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 total_incoming_message_size_current_hour
 
 This method returns a nested hash containing statistics for the total incoming message size in bytes for the previous 
@@ -1001,6 +1181,18 @@ Returns a nested hash containing statistics for the total incoming message size 
 =head2 total_incoming_message_size_current_day_raw
 
 Returns a scalar containing statistics for the total incoming message size in bytes for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_incoming_message_size_current_week
+
+Returns a nested hash containing statistics for the total incoming message size in bytes for the previous weekly period 
+- the hash has the same structure as detailed in the B<total_incoming_message_size_current_hour> above.
+
+=head2 total_incoming_message_size_current_week_raw
+
+Returns a scalar containing statistics for the total incoming message size in bytes for the previous weekly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -1044,6 +1236,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 total_incoming_messages_current_week
+
+Returns a nested hash containing statistics for the total number of incoming messages for the previous weekly period 
+- the hash has the same structure as detailed in the B<total_number_of_incoming_messages_current_hour> above.
+
+=head2 total_incoming_messages_current_week_raw
+
+Returns a scalar containing statistics for the total number of incoming messages for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 total_outgoing_connections_current_hour
 
 This method returns a nested hash containing statistics for the total number of outgoing connections for
@@ -1079,6 +1283,18 @@ Returns a nested hash containing statistics for the total number of outgoing con
 =head2 total_outgoing_connections_current_day_raw
 
 Returns a scalar containing statistics for the total number of outgoing connections for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_connections_current_week
+
+Returns a nested hash containing statistics for the total number of outgoing connections for the previous weekly period 
+- the hash has the same structure as detailed in the B<total_number_outgoing_connections_current_hour> above.
+
+=head2 total_outgoing_connections_current_week_raw
+
+Returns a scalar containing statistics for the total number of outgoing connections for the previous weekly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -1122,6 +1338,18 @@ retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 total_outgoing_message_size_current_week
+
+Returns a nested hash containing statistics for the total outgoing message size in bytes for the previous weekly period 
+- the hash has the same structure as detailed in the B<total_outgoing_message_size_current_hour> above.
+
+=head2 total_outgoing_message_size_current_week_raw
+
+Returns a scalar containing statistics for the total outgoing message size for the previous weekly period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =head2 total_outgoing_messages_current_hour
 
 This method returns a nested hash containing statistics for the total outgoing number of messages for the previous 
@@ -1157,6 +1385,18 @@ Returns a nested hash containing statistics for the total number of outgoing mes
 =head2 total_outgoing_messages_current_day_raw
 
 Returns a scalar containing statistics for the total number of outgoing messages for the previous daily period as 
+retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head2 total_outgoing_messages_current_week
+
+Returns a nested hash containing statistics for the total number of outgoing messages for the previous weekly period 
+- the hash has the same structure as detailed in the B<total_number_of_outgoing_messages_current_hour> above.
+
+=head2 total_outgoing_messages_current_week_raw
+
+Returns a scalar containing statistics for the total number of outgoing messages for the previous weekly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
@@ -1211,6 +1451,18 @@ period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
+=head2 internal_user_details_current_week
+
+Returns a nested hash containing details of the mail sent by each internal user for the previous weekly period
+- the hash has the same structure as detailed in the B<internal_user_details_current_hour> above.
+
+=head2 internal_user_details_current_week_raw
+
+Returns a scalar containing details of the mail sent by each internal user for the previous weekly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
 =cut
 
 
@@ -1261,7 +1513,7 @@ L<http://search.cpan.org/dist/Cisco-IronPort/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Luke Poskitt.
+Copyright 2013 Luke Poskitt.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
@@ -1271,5 +1523,3 @@ See http://dev.perl.org/licenses/ for more information.
 
 
 =cut
-
-1;
