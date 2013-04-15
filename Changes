@@ -1,5 +1,50 @@
 Revision history for Cisco-IronPort
 
+0.08	15-04-2013
+	Added new methods:
+		- incoming_mail_summary_current_week
+		- incoming_mail_summary_current_week_raw
+		- incoming_mail_details_current_week
+		- incoming_mail_details_current_week_raw
+		- top_users_by_clean_outgoing_messages_current_week
+		- top_users_by_clean_outgoing_messages_current_week_raw
+		- average_time_in_workqueue_current_week
+		- average_time_in_workqueue_current_week_raw
+		- average_incoming_message_size_current_week
+		- average_incoming_message_size_current_week_raw
+		- average_messages_in_workqueue_current_week
+		- average_messages_in_workqueue_current_week_raw
+		- average_outgoing_message_size_current_week
+		- average_outgoing_message_size_current_week_raw
+		- cpu_by_function_current_week
+		- cpu_by_function_current_week_raw
+		- incoming_content_filter_matches_current_week
+		- incoming_content_filter_matches_current_week_raw
+		- maximum_messages_in_workqueue_current_week
+		- maximum_messages_in_workqueue_current_week_raw
+		- memory_page_swapping_current_week
+		- memory_page_swapping_current_week_raw
+		- overall_cpu_usage_current_week
+		- overall_cpu_usage_current_week_raw
+		- top_incoming_virus_types_detected_current_week
+		- top_incoming_virus_types_detected_current_week_raw
+		- top_outgoing_content_filter_matches_current_week
+		- top_outgoing_content_filter_matches_current_week_raw
+		- total_incoming_connections_current_week
+		- total_incoming_connections_current_week_raw
+		- total_incoming_message_size_current_week
+		- total_incoming_message_size_current_week_raw
+		- total_incoming_messages_current_week
+		- total_incoming_messages_current_week_raw
+		- total_outgoing_connections_current_week
+		- total_outgoing_connections_current_week_raw
+		- total_outgoing_message_size_current_week
+		- total_outgoing_message_size_current_week_raw
+		- total_outgoing_messages_current_week
+		- total_outgoing_messages_current_week_raw
+		- internal_user_details_current_week
+		- internal_user_details_current_week_raw
+
 0.07	05-12-2012
 	Added new methods:
 		- internal_user_details_current_hour
