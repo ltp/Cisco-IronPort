@@ -6,7 +6,7 @@ use warnings;
 use LWP;
 use Carp qw(croak);
 
-our $VERSION 	= '0.07';
+our $VERSION 	= '0.08';
 our @RANGES	= qw (current_hour current_day);
 our %M_MAP	= (
 		internal_user_details			=> {
@@ -166,14 +166,14 @@ sub new {
 
 			return ( exists $M_MAP{$m}{param} 
 
-			? 	$self->__request("$M_MAP{$m}{report}?format=csv&date_range=$args->{date_range}&".
-						"report_query_id=$M_MAP{$m}{report_query_id}&" .
-						"report_def_id=$M_MAP{$m}{report_def_id}&" .
-						"filter_type=outgoing&filter_name=$args->{filter_name}")
+			? 	$self->__request("$M_MAP{$m}{report}?format=csv&date_range=$args->{date_range}"
+						. "&report_query_id=$M_MAP{$m}{report_query_id}"
+						. "&report_def_id=$M_MAP{$m}{report_def_id}"
+						. "&filter_type=outgoing&filter_name=$args->{filter_name}")
 
-			:	$self->__request("report?format=csv&date_range=$args->{date_range}&" .
-						"report_query_id=$M_MAP{$m}{report_query_id}&" .
-						"report_def_id=$M_MAP{$m}{report_def_id}&profile_type=all")
+			:	$self->__request("report?format=csv&date_range=$args->{date_range}"
+						. "&report_query_id=$M_MAP{$m}{report_query_id}"
+						. "&report_def_id=$M_MAP{$m}{report_def_id}&profile_type=all")
 			)
 		};
 
@@ -190,7 +190,7 @@ sub new {
 				my ($self,$args) = @_;
 				$args->{date_range} = $range;
 				my $f = '__'.$m;
-				return $self->$f(date_range => $range)
+				return $self->$f($args)
 			};
 		}
 	}
@@ -290,10 +290,27 @@ Cisco::IronPort - Interface to Cisco IronPort Reporting API
 	# Total Attempted Messages : 932784938
 	# Clean Messages : (34%) 
 
+	# Print the destination domain and number of pending messages for any domain 
+	# with > 50 pending messages
+
+	foreach my $domain ( keys %stats ) { 
+	        print "There are $stats{$domain}{active_recipients} pending message for $domain\n"
+	                if ( $stats{$domain}{active_recipients} > 50  
+        	                and $stats{$domain}{latest_host_status} ne 'Down' )
+	}
+
+	# Call an alert() function for any users whom have sent mail that matched an outgoing content filter -
+	# handy to warn of users whom have sent mail to a known phishing address.
+
+	foreach my $user ( keys %users ) { 
+	        alert("$user had $users{$user}{outgoing_stopped_by_content_filter} matches for outgoing content filters") 
+	                if $users{$user}{outgoing_stopped_by_content_filter}
+	}
+
 
 =head1 METHODS
 
-=head2 new ( %ARGS )
+=head3 new ( %ARGS )
 
 	my $ironport = Cisco::IronPort->new(
 	  	username => $username,
@@ -326,7 +343,7 @@ when connecting to the reporting API.  If unspecified this parameter defaults to
 
 =back
 
-=head2 incoming_mail_summary_current_hour
+=head3 incoming_mail_summary_current_hour
 
 	my %stats = $ironport->incoming_mail_summary_current_hour;
 	print "Total Attempted Messages : $stats{total_attempted_messages}{count}\n";
@@ -361,26 +378,26 @@ with all spaces converted to underscores and all characters lower-cased.
 	virus_detected
 	spam_detected 
 
-=head2 incoming_mail_summary_current_day
+=head3 incoming_mail_summary_current_day
 
 Returns a nested hash with the same structure and information as described above for the B<incoming_mail_summary_current_hour>
 method, but for a time period covering the current day.
 
-=head2 incoming_mail_summary_current_hour_raw
+=head3 incoming_mail_summary_current_hour_raw
 
 Returns a scalar containing the incoming mail summary statistics for the current hour period unformated and as retrieved directly 
 from the reporting API.
 
 This method may be useful if you wish to process the raw data from the API call directly.
 
-=head2 incoming_mail_summary_current_day_raw
+=head3 incoming_mail_summary_current_day_raw
 
 Returns a scalar containing the incoming mail summary statistics for the current day period unformated and as retrieved directly 
 from the reporting API.
 
 This method may be useful if you wish to process the raw data from the API call directly.
 
-=head2 incoming_mail_details_current_hour
+=head3 incoming_mail_details_current_hour
 
 	# Print a list of sending domains which have sent more than 50 messages
 	# of which over 50% were detected as spam.
@@ -426,22 +443,22 @@ Where each domain having sent email in the current hour period is used as the va
 the subkeys listed above.  For a busy device this hash may contain hundreds or thousands of domains so caution should be 
 excercised in storing and parsing this structure.
 
-=head2 incoming_mail_details_current_day
+=head3 incoming_mail_details_current_day
 
 This method returns a nested hash as described in the B<incoming_mail_details_current_hour> method above but for a period
 of the current day.  Consequently the returned hash may contain a far larger number of entries.
 
-=head2 incoming_mail_details_current_hour_raw
+=head3 incoming_mail_details_current_hour_raw
 
 Returns a scalar containing the incoming mail details for the current hour period as retrieved directly from the reporting
 API.  This method is useful is you wish to access and/or parse the results directly.
 
-=head2 incoming_mail_details_current_day_raw
+=head3 incoming_mail_details_current_day_raw
 
 Returns a scalar containing the incoming mail details for the current day period as retrieved directly from the reporting
 API.  This method is useful is you wish to access and/or parse the results directly.
 
-=head2 top_users_by_clean_outgoing_messages_current_hour
+=head3 top_users_by_clean_outgoing_messages_current_hour
 
 	# Print a list of our top internal users and number of messages sent.
 	
@@ -470,26 +487,26 @@ current hour period.  The hash has the following structure:
 	  ...
 	}
 
-=head2 top_users_by_clean_outgoing_messages_current_day
+=head3 top_users_by_clean_outgoing_messages_current_day
 
 Returns a nested hash containing details of the top ten internal users by number of clean outgoing messages sent for the
 current day period.
 
-=head2 top_users_by_clean_outgoing_messages_current_hour_raw
+=head3 top_users_by_clean_outgoing_messages_current_hour_raw
 
 Returns a scalar containing the details of the top ten internal users by number of clean outgoing messages sent for the
 current hour period as retrieved directly from the reporting API.  
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 top_users_by_clean_outgoing_messages_current_day_raw
+=head3 top_users_by_clean_outgoing_messages_current_day_raw
 
 Returns a scalar containing the details of the top ten internal users by number of clean outgoing messages sent for the
 current day period as retrieved directly from the reporting API.  
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_time_in_workqueue_current_hour
+=head3 average_time_in_workqueue_current_hour
 
 	my %stats = $ironport->average_time_in_workqueue_current_day;
 	
@@ -524,26 +541,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 average_time_in_workqueue_current_day
+=head3 average_time_in_workqueue_current_day
 
 Returns a nested hash containing statistics for the average time a message spent in the workqueue for the previous
 daily period - the hash has the same structure as detailed in the B<average_time_in_workqueue_current_hour> above.
 
-=head2 average_time_in_workqueue_current_hour_raw
+=head3 average_time_in_workqueue_current_hour_raw
 
 Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_time_in_workqueue_current_day_raw
+=head3 average_time_in_workqueue_current_day_raw
 
 Returns a scalar containing statistics for the average time a message spent in the workqueue for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_incoming_message_size_current_hour
+=head3 average_incoming_message_size_current_hour
 
 	my %avg_msg_size = $ironport->average_incoming_message_size_current_hour;
 
@@ -577,26 +594,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 average_incoming_message_size_current_hour_raw
+=head3 average_incoming_message_size_current_hour_raw
 
 Returns a scalar containing statistics for the average incoming message size in bytes for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_incoming_message_size_current_day
+=head3 average_incoming_message_size_current_day
 
 Returns a nested hash containing statistics for the average incoming message size in bytes for the previous daily period 
 - the hash has the same structure as detailed in the B<average_incoming_message_size_current_hour> above.
 
-=head2 average_incoming_message_size_current_day_raw
+=head3 average_incoming_message_size_current_day_raw
 
 Returns a scalar containing statistics for the average incoming message size in bytes for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_messages_in_workqueue_current_hour
+=head3 average_messages_in_workqueue_current_hour
 
 This method returns a nested hash containing statistics for the average number of messages in the workqueue for
 the previous hourly period - the hash has the following structure:
@@ -616,26 +633,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 average_messages_in_workqueue_current_hour_raw
+=head3 average_messages_in_workqueue_current_hour_raw
 
 Returns a scalar containing statistics for the average number of messages in the workqueue for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_messages_in_workqueue_current_day
+=head3 average_messages_in_workqueue_current_day
 
 Returns a nested hash containing statistics for the average number of messages in the workqueue for the previous
 daily period - the hash has the same structure as detailed in the B<average_messages_in_workqueue_current_hour> above.
 
-=head2 average_messages_in_workqueue_current_day_raw
+=head3 average_messages_in_workqueue_current_day_raw
 
 Returns a scalar containing statistics for the average number of messages in the workqueue for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_outgoing_message_size_current_hour
+=head3 average_outgoing_message_size_current_hour
 
 This method returns a nested hash containing statistics for the average outgoing message size in bytes for
 the previous hourly period - the hash has the following structure:
@@ -655,26 +672,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 average_outgoing_message_size_current_hour_raw
+=head3 average_outgoing_message_size_current_hour_raw
 
 Returns a scalar containing statistics for the average outgoing message size in bytes for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 average_outgoing_message_size_current_day
+=head3 average_outgoing_message_size_current_day
 
 Returns a nested hash containing statistics for the average outgoing message size in bytes for the previous
 daily period - the hash has the same structure as detailed in the B<average_outoging_message_size_current_hour> above.
 
-=head2 average_outgoing_message_size_current_day_raw
+=head3 average_outgoing_message_size_current_day_raw
 
 Returns a scalar containing statistics for the average outgoing message size in bytes for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 cpu_by_function_current_hour
+=head3 cpu_by_function_current_hour
 
 This method returns a nested hash containing statistics for the CPU usage by function for the previous hourly period 
 - the hash has the following structure:
@@ -698,26 +715,26 @@ This method returns a nested hash containing statistics for the CPU usage by fun
 	  ...
 	}
 
-=head2 cpu_by_function_current_hour_raw
+=head3 cpu_by_function_current_hour_raw
 
 Returns a scalar containing statistics for the CPU usage by function for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 cpu_by_function_current_day
+=head3 cpu_by_function_current_day
 
 Returns a nested hash containing statistics for the CPU usage by function for the previous daily period 
 - the hash has the same structure as detailed in the B<cpu_by_function_current_hour> above.
 
-=head2 cpu_by_function_current_day_raw
+=head3 cpu_by_function_current_day_raw
 
 Returns a scalar containing statistics for the CPU usage by function for the previous daily period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 incoming_content_filter_matches_current_hour
+=head3 incoming_content_filter_matches_current_hour
 
 This method returns a nested hash containing statistics for incoming content filter matches for the 
 previous hourly period - the hash has the following structure:
@@ -739,26 +756,26 @@ previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 incoming_content_filter_matches_current_hour_raw
+=head3 incoming_content_filter_matches_current_hour_raw
 
 Returns a scalar containing statistics for incoming content filter matches for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 incoming_content_filter_matches_current_day
+=head3 incoming_content_filter_matches_current_day
 
 Returns a nested hash containing statistics for incoming content filter matches for the previous daily period 
 - the hash has the same structure as detailed in the B<incoming_content_filter_matches_current_hour> above.
 
-=head2 incoming_content_filter_matches_current_day_raw
+=head3 incoming_content_filter_matches_current_day_raw
 
 Returns a scalar containing statistics for the incoming content filter matches for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 outgoing_content_filter_matches_current_hour
+=head3 outgoing_content_filter_matches_current_hour
 
 This method returns a nested hash containing statistics for outgoing content filter matches for the 
 previous hourly period - the hash has the following structure:
@@ -779,26 +796,26 @@ previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 outgoing_content_filter_matches_current_hour_raw
+=head3 outgoing_content_filter_matches_current_hour_raw
 
 Returns a scalar containing statistics for outgoing content filter matches for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 outgoing_content_filter_matches_current_day
+=head3 outgoing_content_filter_matches_current_day
 
 Returns a nested hash containing statistics for outgoing content filter matches for the previous daily period 
 - the hash has the same structure as detailed in the B<outgoing_content_filter_matches_current_hour> above.
 
-=head2 outgoing_content_filter_matches_current_day_raw
+=head3 outgoing_content_filter_matches_current_day_raw
 
 Returns a scalar containing statistics for the outgoing content filter matches for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 maximum_messages_in_workqueue_current_hour
+=head3 maximum_messages_in_workqueue_current_hour
 
 This method returns a nested hash containing statistics for the maximum number of messages in the workqueue for
 the previous hourly period - the hash has the following structure:
@@ -818,26 +835,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 maximum_messages_in_workqueue_current_hour_raw
+=head3 maximum_messages_in_workqueue_current_hour_raw
 
 Returns a scalar containing statistics for the maximum number of messages in the workqueue for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 maximum_messages_in_workqueue_current_day
+=head3 maximum_messages_in_workqueue_current_day
 
 Returns a nested hash containing statistics for the maximum number of messages in the workqueue for the previous
 daily period - the hash has the same structure as detailed in the B<maximum_messages_in_workqueue_current_hour> above.
 
-=head2 maximum_messages_in_workqueue_current_day_raw
+=head3 maximum_messages_in_workqueue_current_day_raw
 
 Returns a scalar containing statistics for the maximum messages in the workqueue for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 memory_page_swapping_current_hour
+=head3 memory_page_swapping_current_hour
 
 This method returns a nested hash containing statistics for the number of memory pages swapped for
 the previous hourly period - the hash has the following structure:
@@ -857,26 +874,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 memory_page_swapping_current_hour_raw
+=head3 memory_page_swapping_current_hour_raw
 
 Returns a scalar containing statistics for the number of memory pages swapped for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 memory_page_swapping_current_day
+=head3 memory_page_swapping_current_day
 
 Returns a nested hash containing statistics for the number of memory pages swapped for the previous daily period 
 - the hash has the same structure as detailed in the B<memory_page_swapping_current_hour> above.
 
-=head2 memory_page_swapping_current_day_raw
+=head3 memory_page_swapping_current_day_raw
 
 Returns a scalar containing statistics for the number of memory pages swapped for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 overall_cpu_usage_current_hour
+=head3 overall_cpu_usage_current_hour
 
 This method returns a nested hash containing statistics for the overall CPU usage for the previous 
 hourly period - the hash has the following structure:
@@ -896,26 +913,26 @@ hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 overall_cpu_usage_current_hour_raw
+=head3 overall_cpu_usage_current_hour_raw
 
 Returns a scalar containing statistics for the overall CPU usage for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 overall_cpu_usage_current_day
+=head3 overall_cpu_usage_current_day
 
 Returns a nested hash containing statistics for the overall CPU usage for the previous daily period 
 - the hash has the same structure as detailed in the B<overall_cpu_usage_current_hour> above.
 
-=head2 overall_cpu_usage_current_day_raw
+=head3 overall_cpu_usage_current_day_raw
 
 Returns a scalar containing statistics for the overall CPU usage for the previous daily period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 top_incoming_virus_types_detected_current_hour
+=head3 top_incoming_virus_types_detected_current_hour
 
 This method returns a nested hash containing statistics for the top incoming virus types detected in the previous 
 hourly period - the hash has the following structure:
@@ -936,26 +953,26 @@ hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 top_incoming_virus_types_detected_current_hour_raw
+=head3 top_incoming_virus_types_detected_current_hour_raw
 
 Returns a scalar containing statistics for the top incoming virus types detected in the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 top_incoming_virus_types_detected_current_day
+=head3 top_incoming_virus_types_detected_current_day
 
 Returns a nested hash containing statistics for the top incoming virus types detected in the previous daily 
 period - the hash has the same structure as detailed in the B<top_incoming_virus_types_detected_current_hour> above.
 
-=head2 top_incoming_virus_types_detected_current_day_raw
+=head3 top_incoming_virus_types_detected_current_day_raw
 
 Returns a scalar containing statistics for the top incoming virus types detected for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 top_outgoing_content_filter_matches_current_hour
+=head3 top_outgoing_content_filter_matches_current_hour
 
 This method returns a nested hash containing statistics for the top outgoing content filter matches for the 
 previous hourly period - the hash has the following structure:
@@ -976,26 +993,26 @@ previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 top_outgoing_content_filter_matches_current_hour_raw
+=head3 top_outgoing_content_filter_matches_current_hour_raw
 
 Returns a scalar containing statistics for the top outgoing content content filter matches for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 top_outgoing_content_filter_matches_current_day
+=head3 top_outgoing_content_filter_matches_current_day
 
 Returns a nested hash containing statistics for the top outgoing content filter matches for the previous daily period 
 - the hash has the same structure as detailed in the B<top_outgoing_content_filter_matches_current_hour> above.
 
-=head2 top_outgoing_content_filter_matches_current_day_raw
+=head3 top_outgoing_content_filter_matches_current_day_raw
 
 Returns a nested hash containing statistics for the top outgoing content filter matches for the previous daily 
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 top_incoming_content_filter_matches_current_hour
+=head3 top_incoming_content_filter_matches_current_hour
 
 This method returns a nested hash containing statistics for the top incoming content filter matches for the 
 previous hourly period - the hash has the following structure:
@@ -1016,26 +1033,26 @@ previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 top_incoming_content_filter_matches_current_hour_raw
+=head3 top_incoming_content_filter_matches_current_hour_raw
 
 Returns a scalar containing statistics for the top incoming content content filter matches for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 top_incoming_content_filter_matches_current_day
+=head3 top_incoming_content_filter_matches_current_day
 
 Returns a nested hash containing statistics for the top incoming content filter matches for the previous daily period 
 - the hash has the same structure as detailed in the B<top_incoming_content_filter_matches_current_hour> above.
 
-=head2 top_incoming_content_filter_matches_current_day_raw
+=head3 top_incoming_content_filter_matches_current_day_raw
 
 Returns a scalar containing statistics for the top incoming content content filter matches for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_incoming_connections_current_hour
+=head3 total_incoming_connections_current_hour
 
 This method returns a nested hash containing statistics for the total number of incoming connections for
 the previous hourly period - the hash has the following structure:
@@ -1055,26 +1072,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 total_incoming_connections_current_hour_raw
+=head3 total_incoming_connections_current_hour_raw
 
 Returns a scalar containing statistics for the total number of incoming connections for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_incoming_connections_current_day
+=head3 total_incoming_connections_current_day
 
 Returns a nested hash containing statistics for the total number of incoming connections for the previous daily period 
 - the hash has the same structure as detailed in the B<total_incoming connections_current_hour> above.
 
-=head2 total_incoming_connections_current_day_raw
+=head3 total_incoming_connections_current_day_raw
 
 Returns a scalar containing statistics for the total number of incoming connections for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_incoming_message_size_current_hour
+=head3 total_incoming_message_size_current_hour
 
 This method returns a nested hash containing statistics for the total incoming message size in bytes for the previous 
 hourly period - the hash has the following structure:
@@ -1094,26 +1111,26 @@ hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 total_incoming_message_size_current_hour_raw
+=head3 total_incoming_message_size_current_hour_raw
 
 Returns a scalar containing statistics for the total incoming message size in bytes for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_incoming_message_size_current_day
+=head3 total_incoming_message_size_current_day
 
 Returns a nested hash containing statistics for the total incoming message size in bytes for the previous daily period 
 - the hash has the same structure as detailed in the B<total_incoming_message_size_current_hour> above.
 
-=head2 total_incoming_message_size_current_day_raw
+=head3 total_incoming_message_size_current_day_raw
 
 Returns a scalar containing statistics for the total incoming message size in bytes for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_incoming_messages_current_hour
+=head3 total_incoming_messages_current_hour
 
 This method returns a nested hash containing statistics for the total number of incoming messages for
 the previous hourly period - the hash has the following structure:
@@ -1133,26 +1150,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 total_incoming_messages_current_hour_raw
+=head3 total_incoming_messages_current_hour_raw
 
 Returns a scalar containing statistics for the total number of incoming messages for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_incoming_messages_current_day
+=head3 total_incoming_messages_current_day
 
 Returns a nested hash containing statistics for the total number of incoming messages for the previous daily period 
 - the hash has the same structure as detailed in the B<total_number_of_incoming_messages_current_hour> above.
 
-=head2 total_incoming_messages_current_day_raw
+=head3 total_incoming_messages_current_day_raw
 
 Returns a scalar containing statistics for the total number of incoming messages for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_outgoing_connections_current_hour
+=head3 total_outgoing_connections_current_hour
 
 This method returns a nested hash containing statistics for the total number of outgoing connections for
 the previous hourly period - the hash has the following structure:
@@ -1172,26 +1189,26 @@ the previous hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 total_outgoing_connections_current_hour_raw
+=head3 total_outgoing_connections_current_hour_raw
 
 Returns a scalar containing statistics for the total number of outgoing connections for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_outgoing_connections_current_day
+=head3 total_outgoing_connections_current_day
 
 Returns a nested hash containing statistics for the total number of outgoing connections for the previous daily period 
 - the hash has the same structure as detailed in the B<total_number_outgoing_connections_current_hour> above.
 
-=head2 total_outgoing_connections_current_day_raw
+=head3 total_outgoing_connections_current_day_raw
 
 Returns a scalar containing statistics for the total number of outgoing connections for the previous daily period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_outgoing_message_size_current_hour
+=head3 total_outgoing_message_size_current_hour
 
 This method returns a nested hash containing statistics for the total outgoing message size in bytes for the previous 
 hourly period - the hash has the following structure:
@@ -1211,26 +1228,26 @@ hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 total_outgoing_message_size_current_hour_raw
+=head3 total_outgoing_message_size_current_hour_raw
 
 Returns a scalar containing statistics for the total outgoing message size in bytes for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_outgoing_message_size_current_day
+=head3 total_outgoing_message_size_current_day
 
 Returns a nested hash containing statistics for the total outgoing message size in bytes for the previous daily period 
 - the hash has the same structure as detailed in the B<total_outgoing_message_size_current_hour> above.
 
-=head2 total_outgoing_message_size_current_day_raw
+=head3 total_outgoing_message_size_current_day_raw
 
 Returns a scalar containing statistics for the total outgoing message size for the previous daily period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_outgoing_messages_current_hour
+=head3 total_outgoing_messages_current_hour
 
 This method returns a nested hash containing statistics for the total outgoing number of messages for the previous 
 hourly period - the hash has the following structure:
@@ -1250,26 +1267,26 @@ hourly period - the hash has the following structure:
 	  ...
 	}
 
-=head2 total_outgoing_messages_current_hour_raw
+=head3 total_outgoing_messages_current_hour_raw
 
 Returns a scalar containing statistics for the total number of outgoing messages for the previous hourly period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 total_outgoing_messages_current_day
+=head3 total_outgoing_messages_current_day
 
 Returns a nested hash containing statistics for the total number of outgoing messages for the previous daily period 
 - the hash has the same structure as detailed in the B<total_number_of_outgoing_messages_current_hour> above.
 
-=head2 total_outgoing_messages_current_day_raw
+=head3 total_outgoing_messages_current_day_raw
 
 Returns a scalar containing statistics for the total number of outgoing messages for the previous daily period as 
 retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 internal_user_details_current_hour
+=head3 internal_user_details_current_hour
 
 This method returns a nested hash containing details of the mail sent by each internal user for the previous 
 hourly period - the hash has the following structure:
@@ -1300,26 +1317,26 @@ hourly period - the hash has the following structure:
 		...
 	}
 
-=head2 internal_user_details_current_hour_raw
+=head3 internal_user_details_current_hour_raw
 
 Returns a scalar containing details of the mail sent by each internal user for the previous hourly
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 internal_user_details_current_day
+=head3 internal_user_details_current_day
 
 Returns a nested hash containing details of the mail sent by each internal user for the previous daily period
 - the hash has the same structure as detailed in the B<internal_user_details_current_hour> above.
 
-=head2 internal_user_details_current_day_raw
+=head3 internal_user_details_current_day_raw
 
 Returns a scalar containing details of the mail sent by each internal user for the previous daily
 period as retrieved directly from the reporting API.
 
 This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
-=head2 content_filter_detail_current_hour ( { filter_name => $filter_name } )
+=head3 content_filter_detail_current_hour ( { filter_name => $filter_name } )
 
 Given an anonymous hash containing the key 'filter_name' where the value is a valid content filter
 name defined on the target device, this method returns a nested hash containing details of the 
@@ -1336,20 +1353,74 @@ content filter statistics for the previous hourly period - the hash has the foll
 	},
 	measurement_period_1_begin_timestamp => {
 	  
-=head2 content_filter_detail_current_hour ( { filter_name => $filter_name } )
+=head3 content_filter_detail_current_hour_raw ( { filter_name => $filter_name } )
+
+Returns a scalar containing details of the content filter statistics for the previous hourly
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head3 content_filter_detail_current_day ( { filter_name => $filter_name } )
 
 Given an anonymous hash containing the key 'filter_name' where the value is a valid content filter
 name defined on the target device, this method returns a nested hash containing details of the 
-content filter statistics for the previous hourly period - the hash has the following structure:
+content filter statistics for the previous daily period - the hash has the same structure as
+detailed in the B<content_filter_detail_current_hour> method.
 
+=head3 content_filter_detail_current_day_raw ( { filter_name => $filter_name } )
+
+Returns a scalar containing details of the content filter statistics for the previous daily
+period as retrieved directly from the reporting API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head3 outgoing_delivery_status_current_hour
+
+Returns a nested hash containing details of outgoing delivery status statistics for the previous
+hourly period indexed by destination domain - the hash has the following structure:
+
+	domain-1.com => {
+	  active_recipients	=> the number of messages currently pending delivery for this domain,
+	  connections_out	=> the number of active outbound connections to this domain,
+	  delivered recipients	=> the number of messages delivered to this domain,
+	  destination_domain	=> the destination domain name (this is the same as the hash key),
+	  hard_bounced		=> the number of messages sent to this domain that were hard bounced,
+	  latest_host_status	=> the last recorded host status (e.g. up or down),
+	  soft_bounced		=> the number of messages sent to this domain that were soft bounced,
+	},
+	domain-2.com => {
+	  ...
+	},
+	...
+	domain-n.com => {
+	  ...
+	}
+	
+=head3 outgoing_delivery_status_current_hour_raw
+
+Returns a scalar containing details of outgoing delivery status statistics for the previous hourly 
+period as returned directly from the API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
+
+=head3 outgoing_delivery_status_current_day
+
+Returns a nested hash containing details of outgoing delivery status statistics for the previous
+daily period indexed by destination domain - the hash has the same structure as the hash returned
+in the B<outgoing_delivery_status_current_hour> method.
+
+=head3 outgoing_delivery_status_current_day_raw
+
+Returns a scalar containing details of outgoing delivery status statistics for the previous daily 
+period as returned directly from the API.
+
+This method may be useful if you wish to process the raw data retrieved from the API yourself.
 
 =cut
-
 
 =head1 AUTHOR
 
 Luke Poskitt, C<< <ltp at cpan.org> >>
-
 
 =head1 BUGS
 
@@ -1357,13 +1428,11 @@ Please report any bugs or feature requests to C<bug-cisco-ironport at rt.cpan.or
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Cisco-IronPort>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
     perldoc Cisco::IronPort
-
 
 You can also look for information at:
 
@@ -1387,13 +1456,9 @@ L<http://search.cpan.org/dist/Cisco-IronPort/>
 
 =back
 
-
-=head1 ACKNOWLEDGEMENTS
-
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Luke Poskitt.
+Copyright 2013 Luke Poskitt.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
@@ -1401,6 +1466,4 @@ by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
 
-
 =cut
-
