@@ -6,7 +6,7 @@ use warnings;
 use LWP;
 use Carp qw(croak);
 
-our $VERSION 	= '0.09';
+our $VERSION 	= '0.10';
 our @RANGES	= qw (current_hour current_day current_week);
 our %M_MAP	= (
 		internal_user_details			=> {
@@ -485,7 +485,7 @@ API.  This method is useful is you wish to access and/or parse the results direc
 	my %top_users = $ironport->top_users_by_clean_outgoing_messages_current_hour;
 
 	foreach my $user (sort keys %top_users) {
-	  print "$user - $top_users{clean_messages} messages\n";
+	  print "$user - $top_users{$user}{clean_messages} messages\n";
 	}
 
 Returns a nested hash containing details of the top ten internal users by number of clean outgoing messages sent for the
